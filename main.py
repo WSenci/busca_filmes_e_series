@@ -34,7 +34,8 @@ def search_serie(series_name):
         print(f"Erro: {response.status_code}")
         return None
 
-def search_all(query):
+def search_all():
+    query = inputBusca.get()
     movies = search_movie(query)
     series = search_serie(query)
 
@@ -55,12 +56,28 @@ def search_all(query):
 #     for serie in resultado.get('results', []):
 #         print(f"Título: {serie['name']}, Lançamento: {serie['first_air_date']}")
 
-query = "The Witcher"
-resultado = search_all(query)
-print("Filmes:")
-for movie in resultado['movies']:
-    print(f"Título: {movie['title']}, Lançamento: {movie['release_date']}")
+# query = inputBusca.get()
+# resultado = search_all(query)
+# print("Filmes:")
+# for movie in resultado['movies']:
+#     print(f"Título: {movie['title']}, Lançamento: {movie['release_date']}")
 
-print("\nSéries:")
-for serie in resultado['series']:
-    print (f"Título: {serie['name']}, Lançamento: {serie['first_air_date']}")
+# print("\nSéries:")
+# for serie in resultado['series']:
+#     print (f"Título: {serie['name']}, Lançamento: {serie['first_air_date']}")
+
+janela = Tk()
+janela.title("Busca Filmes e Séries - Python")
+janela.geometry("1280x720")
+# janela.attributes('-fullscreen', True) colocar janela em fullscreen
+
+titulo = Label(janela, text="Coloque o nome do filme ou da série:", font=("Arial", 16, "bold"))
+titulo.grid(column=0, row=0, padx=10, pady=10)
+
+inputBusca = Entry(width=20, bg="White", font=("Arial", 14))
+inputBusca.grid(column=0, row=1, padx=10, pady=10)
+
+botaoBusca = Button(janela, text="Buscar", bg="#3b0b66", fg="white", width=8, height=2, command=search_all)
+botaoBusca.grid(column=1, row=1, padx=10, pady=10)
+
+janela.mainloop()
