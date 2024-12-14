@@ -44,27 +44,17 @@ def search_all():
         "series": series.get('results', []) if series else []
     }
 
-    return all_results
+    filmes = Label(janela, text="Filmes:", font=("Arial", 14))
+    filmes.grid(column=0, row=2, padx=10, pady=10)
+    for movie in all_results['movies']:
+        print(f"Título: {movie['title']}, Lançamento: {movie['release_date']}")
 
-# resultado = search_movie("Interestelar")
-# if resultado:
-#     for movie in resultado.get('results', []):
-#         print(f"Título: {movie['title']}, Lançamento: {movie['release_date']}")
+    series = Label(janela, text="Séries:", font=("Arial", 14))
+    series.grid(column=0, row=4, padx=10, pady=10)
+    for serie in all_results['series']:
+        print (f"Título: {serie['name']}, Lançamento: {serie['first_air_date']}")
 
-# resultado = search_serie("Breaking Bad")
-# if resultado:
-#     for serie in resultado.get('results', []):
-#         print(f"Título: {serie['name']}, Lançamento: {serie['first_air_date']}")
-
-# query = inputBusca.get()
-# resultado = search_all(query)
-# print("Filmes:")
-# for movie in resultado['movies']:
-#     print(f"Título: {movie['title']}, Lançamento: {movie['release_date']}")
-
-# print("\nSéries:")
-# for serie in resultado['series']:
-#     print (f"Título: {serie['name']}, Lançamento: {serie['first_air_date']}")
+    return 
 
 janela = Tk()
 janela.title("Busca Filmes e Séries - Python")
