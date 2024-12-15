@@ -1,8 +1,10 @@
 import requests
 from tkinter import *
+from PIL import Image, ImageTk
 
 API_KEY = "758c966fcd7292ff4a1dcc51479f21a9"
 BASE_URL = "https://api.themoviedb.org/3"
+IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w200"
 
 def search_movie(movie_name):
     endpoint = f"{BASE_URL}/search/movie"
@@ -34,40 +36,75 @@ def search_serie(series_name):
         print(f"Erro: {response.status_code}")
         return None
 
+def display_results(results, frame, row_offset):
+    for idx, item in enumerate(results):
+        poster_path = item.get('poster_path')
+        if poster_path:
+            image_url = f"{IMAGE_BASE_URL}{poster_path}"
+            response = requests.get(image_url, stream=True)
+            if response.status_code == 200:
+                image_data = response.raw
+                img = Image.open(image_data)
+                img = img.resize((100, 150), Image.LANCZOS)
+                photo = ImageTk.PhotoImage(img)
+                img_label = Label(frame, image=photo)
+                img_label.image = photo
+                img_label.grid(column=0, row=row_offset + idx, padx=10, pady=10)
+
+        title = item.get('title') or item.get('name', "Título não disponível")
+        date = item.get('release_date') or item.get('first_air_date', "Data não disponível")
+        text_label = Label(frame, text=f"{title}\n{date}", font=("Arial", 12), justify="left")
+        text_label.grid(column=1, row=row_offset + idx, padx=10, pady=10)
+
 def search_all():
     query = inputBusca.get()
     movies = search_movie(query)
     series = search_serie(query)
 
-    all_results = {
-        "movies": movies.get('result', []) if movies else [],
-        "series": series.get('results', []) if series else []
-    }
+    for widget in result_frame.winfo_children():
+        widget.destroy()
 
-    filmes = Label(janela, text="Filmes:", font=("Arial", 14))
-    filmes.grid(column=0, row=2, padx=10, pady=10)
-    for movie in all_results['movies']:
-        print(f"Título: {movie['title']}, Lançamento: {movie['release_date']}")
+    row_counter = 0
+    if movies and movies.get('results'):
+        Label(result_frame, text="Filmes:", font=("Arial", 14, "bold")).grid(column=0, row=row_counter, padx=10, pady=10)
+        row_counter += 1
+        display_results(movies.get('results'), result_frame, row_offset=row_counter)
+        row_counter += len(movies.get('results'))
 
-    series = Label(janela, text="Séries:", font=("Arial", 14))
-    series.grid(column=0, row=4, padx=10, pady=10)
-    for serie in all_results['series']:
-        print (f"Título: {serie['name']}, Lançamento: {serie['first_air_date']}")
+    if series and series.get('results'):
+        Label(result_frame, text="Séries:", font=("Arial", 14, "bold")).grid(column=0, row=row_counter, padx=10, pady=10)
+        row_counter += 1
+        display_results(series.get('results'), result_frame, row_offset=row_counter)
 
-    return 
+    result_frame.update_idletasks()
+    canvas.configure(scrollregion=canvas.bbox("all"))
 
 janela = Tk()
 janela.title("Busca Filmes e Séries - Python")
-janela.geometry("1280x720")
-# janela.attributes('-fullscreen', True) colocar janela em fullscreen
+janela.geometry("800x600")
 
 titulo = Label(janela, text="Coloque o nome do filme ou da série:", font=("Arial", 16, "bold"))
-titulo.grid(column=0, row=0, padx=10, pady=10)
+titulo.pack(pady=10)
 
-inputBusca = Entry(width=20, bg="White", font=("Arial", 14))
-inputBusca.grid(column=0, row=1, padx=10, pady=10)
+inputBusca = Entry(janela, width=40, bg="White", font=("Arial", 14))
+inputBusca.pack(pady=10)
 
 botaoBusca = Button(janela, text="Buscar", bg="#3b0b66", fg="white", width=8, height=2, command=search_all)
-botaoBusca.grid(column=1, row=1, padx=10, pady=10)
+botaoBusca.pack(pady=10)
+
+main_frame = Frame(janela)
+main_frame.pack(fill=BOTH, expand=1)
+
+canvas = Canvas(main_frame)
+canvas.pack(side=LEFT, fill=BOTH, expand=1)
+
+scrollbar = Scrollbar(main_frame, orient=VERTICAL, command=canvas.yview)
+scrollbar.pack(side=RIGHT, fill=Y)
+
+canvas.configure(yscrollcommand=scrollbar.set)
+canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+result_frame = Frame(canvas)
+canvas.create_window((0, 0), window=result_frame, anchor="nw")
 
 janela.mainloop()
