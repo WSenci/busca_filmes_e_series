@@ -79,6 +79,9 @@ def search_all():
     result_frame.update_idletasks()
     canvas.configure(scrollregion=canvas.bbox("all"))
 
+def on_mouse_wheel(event):
+    canvas.yview_scroll(-1 * int(event.delta / 120), "units")
+
 janela = Tk()
 janela.title("Busca Filmes e Séries - Python")
 janela.geometry("800x600")
@@ -100,6 +103,8 @@ canvas.pack(side=LEFT, fill=BOTH, expand=1)
 
 scrollbar = Scrollbar(main_frame, orient=VERTICAL, command=canvas.yview)
 scrollbar.pack(side=RIGHT, fill=Y)
+
+canvas.bind_all("<MouseWheel>", on_mouse_wheel)
 
 canvas.configure(yscrollcommand=scrollbar.set)
 canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
