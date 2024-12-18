@@ -36,26 +36,6 @@ def search_serie(series_name):
         print(f"Erro: {response.status_code}")
         return None
 
-def display_results(results, frame, row_offset):
-    for idx, item in enumerate(results):
-        poster_path = item.get('poster_path')
-        if poster_path:
-            image_url = f"{IMAGE_BASE_URL}{poster_path}"
-            response = requests.get(image_url, stream=True)
-            if response.status_code == 200:
-                image_data = response.raw
-                img = Image.open(image_data)
-                img = img.resize((100, 150), Image.LANCZOS)
-                photo = ImageTk.PhotoImage(img)
-                img_label = Label(frame, image=photo)
-                img_label.image = photo
-                img_label.grid(column=0, row=row_offset + idx, padx=10, pady=10)
-
-        title = item.get('title') or item.get('name', "Título não disponível")
-        date = item.get('release_date') or item.get('first_air_date', "Data não disponível")
-        text_label = Label(frame, text=f"{title}\n{date}", font=("Arial", 12), justify="left")
-        text_label.grid(column=1, row=row_offset + idx, padx=10, pady=10)
-
 def search_all():
     query = inputBusca.get()
     movies = search_movie(query)
@@ -79,12 +59,92 @@ def search_all():
     result_frame.update_idletasks()
     canvas.configure(scrollregion=canvas.bbox("all"))
 
+def display_results(results, frame, row_offset):
+    for idx, item in enumerate(results):
+        col = idx % 3
+        row = row_offset + (idx // 3) * 2
+
+        poster_path = item.get('poster_path')
+        if poster_path:
+            image_url = f"{IMAGE_BASE_URL}{poster_path}"
+            response = requests.get(image_url, stream=True)
+            if response.status_code == 200:
+                image_data = response.raw
+                img = Image.open(image_data)
+                img = img.resize((100, 150), Image.LANCZOS)
+                photo = ImageTk.PhotoImage(img)
+
+                img_label = Label(frame, image=photo)
+                img_label.image = photo
+                img_label.grid(column=col, row=row, padx=10, pady=10)
+
+        title = item.get('title') or item.get('name', "Título não disponível")
+        date = item.get('release_date') or item.get('first_air_date', "Data não disponível")
+        text_label = Label(frame, text=f"{title}\n{date}", font=("Arial", 12), justify="center", wraplength=100)
+        text_label.grid(column=col, row=row + 1, padx=10, pady=10)
+
+def fetch_filtered_movies():
+    endpoint = f"{BASE_URL}/discover/movie"
+    params = {
+        "api_key": API_KEY,
+        "language": "pt-BR",
+        "sort_by": "vote_average.desc",
+        "vote_count.gte": 1000
+    }
+    response = requests.get(endpoint, params=params)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Erro: {response.status_code}")
+        return None
+
+def fetch_filtered_series():
+    endpoint = f"{BASE_URL}/discover/tv"
+    params = {
+        "api_key": API_KEY,
+        "language": "pt-BR",
+        "sort_by": "vote_average.desc",
+        "vote_count.gte": 500
+    }
+    response = requests.get(endpoint, params=params)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Erro: {response.status_code}")
+        return None
+
+def show_top_rated_movies():
+    movies = fetch_filtered_movies()
+
+    for widget in result_frame.winfo_children():
+        widget.destroy()
+
+    if movies and movies.get('results'):
+        Label(result_frame, text="Filmes Mais Bem Avaliados:", font=("Arial", 14, "bold")).grid(column=0, row=0, padx=10, pady=10)
+        display_results(movies.get('results'), result_frame, row_offset=1)
+
+    result_frame.update_idletasks()
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+def show_top_rated_series():
+    series = fetch_filtered_series()
+
+    for widget in result_frame.winfo_children():
+        widget.destroy()
+
+    if series and series.get('results'):
+        Label(result_frame, text="Séries Mais Bem Avaliadas:", font=("Arial", 14, "bold")).grid(column=0, row=0, padx=10, pady=10)
+        display_results(series.get('results'), result_frame, row_offset=1)
+
+    result_frame.update_idletasks()
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
 def on_mouse_wheel(event):
     canvas.yview_scroll(-1 * int(event.delta / 120), "units")
 
 janela = Tk()
 janela.title("Busca Filmes e Séries - Python")
-janela.geometry("800x600")
+janela.geometry("1280x720")
 
 titulo = Label(janela, text="Coloque o nome do filme ou da série:", font=("Arial", 16, "bold"))
 titulo.pack(pady=10)
@@ -94,6 +154,12 @@ inputBusca.pack(pady=10)
 
 botaoBusca = Button(janela, text="Buscar", bg="#3b0b66", fg="white", width=8, height=2, command=search_all)
 botaoBusca.pack(pady=10)
+
+botaoMelhoresFilmes = Button(janela, text="Melhores Filmes", bg="#3b0b66", fg="white", width=15, height=2, command=show_top_rated_movies)
+botaoMelhoresFilmes.pack(pady=10)
+
+botaoMelhoresSeries = Button(janela, text="Melhores Séries", bg="#3b0b66", fg="white", width=15, height=2, command=show_top_rated_series)
+botaoMelhoresSeries.pack(pady=10)
 
 main_frame = Frame(janela)
 main_frame.pack(fill=BOTH, expand=1)
