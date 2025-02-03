@@ -140,7 +140,12 @@ def show_top_rated_series():
     canvas.configure(scrollregion=canvas.bbox("all"))
 
 def on_mouse_wheel(event):
-    canvas.yview_scroll(-1 * int(event.delta / 120), "units")
+    if event.num == 4:
+        canvas.yview_scroll(-1, "units")
+    elif event.num == 5:
+        canvas.yview_scroll(1, "units")
+    else:
+        canvas.yview_scroll(-1 * (event.delta // 120), "units")
 
 janela = Tk()
 janela.title("Busca Filmes e Séries - Python")
@@ -171,6 +176,8 @@ scrollbar = Scrollbar(main_frame, orient=VERTICAL, command=canvas.yview)
 scrollbar.pack(side=RIGHT, fill=Y)
 
 canvas.bind_all("<MouseWheel>", on_mouse_wheel)
+canvas.bind_all("<Button-4>", on_mouse_wheel)
+canvas.bind_all("<Button-5>", on_mouse_wheel)
 
 canvas.configure(yscrollcommand=scrollbar.set)
 canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
