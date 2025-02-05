@@ -60,7 +60,9 @@ def open_details(item, is_movie):
         duration = details.get("runtime", "Desconhecido")
         extra_info = f"Duração: {duration} min"
     else:
-        seasons = item.get("number_of_seasons", "Desconhecido")
+        serie_id = item.get("id")
+        details = requests.get(f"{BASE_URL}/tv/{serie_id}", params={"api_key": API_KEY, "language": "pt-BR"}).json()
+        seasons = details.get("number_of_seasons", "Desconhecido")
         extra_info = f"Temporadas: {seasons}"
 
     # para exibir infos
