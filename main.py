@@ -112,13 +112,14 @@ def search_all():
     if movies and movies.get('results'):
         Label(result_frame, text="Filmes:", font=("Arial", 14, "bold")).grid(column=0, row=row_counter, padx=10, pady=10)
         row_counter += 1
-        display_results(movies.get('results'), result_frame, row_offset=row_counter)
+        display_results(movies.get('results'), result_frame, row_offset=row_counter, is_movie=True)
         row_counter += len(movies.get('results'))
 
     if series and series.get('results'):
+        row_counter += len(movies.get('results', []))
         Label(result_frame, text="Séries:", font=("Arial", 14, "bold")).grid(column=0, row=row_counter, padx=10, pady=10)
         row_counter += 1
-        display_results(series.get('results'), result_frame, row_offset=row_counter)
+        display_results(series.get('results'), result_frame, row_offset=row_counter, is_movie=False)
 
     result_frame.update_idletasks()
     canvas.configure(scrollregion=canvas.bbox("all"))
@@ -187,6 +188,7 @@ def on_mouse_wheel(event):
     else:
         canvas.yview_scroll(-1 * (event.delta // 120), "units")
 
+# interface
 janela = Tk()
 janela.title("Busca Filmes e Séries - Python")
 janela.geometry("1280x720")
@@ -215,6 +217,7 @@ canvas.pack(side=LEFT, fill=BOTH, expand=1)
 scrollbar = Scrollbar(main_frame, orient=VERTICAL, command=canvas.yview)
 scrollbar.pack(side=RIGHT, fill=Y)
 
+# scroll da tela pela bola do mouse
 canvas.bind_all("<MouseWheel>", on_mouse_wheel)
 canvas.bind_all("<Button-4>", on_mouse_wheel)
 canvas.bind_all("<Button-5>", on_mouse_wheel)
