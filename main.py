@@ -160,9 +160,11 @@ def show_top_rated_movies():
     for widget in result_frame.winfo_children():
         widget.destroy()
 
+    row_counter = 0
     if movies and movies.get('results'):
         Label(result_frame, text="Filmes Mais Bem Avaliados:", font=("Arial", 14, "bold")).grid(column=0, row=0, padx=10, pady=10)
-        display_results(movies.get('results'), result_frame, row_offset=1)
+        row_counter += 1
+        display_results(movies.get('results'), result_frame, row_offset=row_counter, is_movie=True)
 
     result_frame.update_idletasks()
     canvas.configure(scrollregion=canvas.bbox("all"))
@@ -173,9 +175,11 @@ def show_top_rated_series():
     for widget in result_frame.winfo_children():
         widget.destroy()
 
+    row_counter = 0
     if series and series.get('results'):
         Label(result_frame, text="Séries Mais Bem Avaliadas:", font=("Arial", 14, "bold")).grid(column=0, row=0, padx=10, pady=10)
-        display_results(series.get('results'), result_frame, row_offset=1)
+        row_counter += 1
+        display_results(series.get('results'), result_frame, row_offset=row_counter, is_movie=False)
 
     result_frame.update_idletasks()
     canvas.configure(scrollregion=canvas.bbox("all"))
