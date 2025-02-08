@@ -31,7 +31,7 @@ def search_serie(series_name):
 def open_details(item, is_movie):
     details_window = Toplevel(janela)
     details_window.title(item.get("title") or item.get("name"))
-    details_window.geometry("800x600")
+    details_window.geometry("1200x600")
 
     # para baixar o poster
     poster_path = item.get("poster_path")
@@ -65,17 +65,34 @@ def open_details(item, is_movie):
         seasons = details.get("number_of_seasons", "Desconhecido")
         extra_info = f"Temporadas: {seasons}"
 
+    #para peagr a info de onde assistir
+    def get_watch_providers(item_id, is_movie):
+        endpoint = f"{BASE_URL}/{ 'movie' if is_movie else 'tv'}/{item_id}/watch/providers"
+        params = {"api_key": API_KEY}
+        response = requests.get(endpoint, params=params).json()
+
+        providers = response.get("results", {}).get("BR", {})
+        streaming_services = providers.get("flatrate", [])
+
+        if streaming_services:
+            return [service["provider_name"] for service in streaming_services]
+        return ["Não disponível para streaming"]
+
+    watch_providers = get_watch_providers(item.get("id"), is_movie)
+    providers_text = ", ".join(watch_providers)
+
     # para exibir infos
     Label(details_window, text=title, font=("Arial", 20, "bold")).grid(row=0, column=1, padx=10, pady=5, sticky="w")
     Label(details_window, text=f"Data de lançamento: {release_date}", font=("Arial", 14)).grid(row=1, column=1, padx=10, sticky="w")
     Label(details_window, text=f"Nota: {vote_average}/10", font=("Arial", 14)).grid(row=2, column=1, padx=10, sticky="w")
     Label(details_window, text=extra_info, font=("Arial", 14)).grid(row=3, column=1, padx=10, sticky="w")
-    Label(details_window, text="Sinopse:", font=("Arial", 16, "bold")).grid(row=4, column=1, padx=10, pady=5, sticky="w")
+    Label(details_window, text=f"Disponível em: {providers_text}", font=("Arial", 14)).grid(row=4, column=1, padx=10, pady=5, sticky="w")
+    Label(details_window, text="Sinopse:", font=("Arial", 16, "bold")).grid(row=5, column=1, padx=10, pady=5, sticky="w")
 
-    text_overview = Text(details_window, wrap=WORD, width=60, height=10, font=("Arial", 12))
+    text_overview = Text(details_window, wrap=WORD, width=60, height=15, font=("Arial", 14))
     text_overview.insert(END, overview)
     text_overview.config(state=DISABLED)
-    text_overview.grid(row=5, column=1, padx=10, pady=10)
+    text_overview.grid(row=6, column=1, padx=10, pady=10)
 
 def display_results(results, frame, row_offset, is_movie):
     for idx, item in enumerate(results):
